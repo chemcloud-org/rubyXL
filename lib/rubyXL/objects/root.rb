@@ -54,6 +54,9 @@ module RubyXL
 
         self.rels_hash.keys.sort_by{ |c| c::SAVE_ORDER }.each { |klass|
           puts "<-- DEBUG: saving related #{klass} files" if @@debug
+          # A part reached through several relationships (e.g. an image used by two drawings) is loaded once per
+          # relationship; path-named parts and their .rels must be written only once, or the zip gets duplicate entries.
+          self.rels_hash[klass].uniq!(&:xlsx_path) if klass <= GenericStorageObject || klass == OOXMLRelationshipsFile
           self.rels_hash[klass].select! { |obj|
             puts "<-- DEBUG:   > #{obj.xlsx_path}" if @@debug
             obj.add_to_zip(zipstream)
